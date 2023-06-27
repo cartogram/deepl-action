@@ -12,7 +12,7 @@
     "lint": "tsc",
     "ci": "pnpm run lint && pnpm run build && pnpm run test",
     "format": "prettier --write .",
-    "release": "pnpm run build"
+    "package": "ncc build --source-map --license licenses.txt"
   },
   "repository": {
     "type": "git",
@@ -32,6 +32,7 @@
   },
   "devDependencies": {
     "@types/node": "^18.16.3",
+    "@vercel/ncc": "^0.36.1",
     "prettier": "^2.8.8",
     "tsup": "^7.1.0",
     "typescript": "^5.0.4",
