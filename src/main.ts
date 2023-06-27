@@ -1,10 +1,14 @@
 import * as core from '@actions/core'
 import * as glob from '@actions/glob'
+import * as http from '@actions/http-client'
 import * as path from 'path'
 import * as fs from 'fs/promises'
-import {DeepL} from '@cartogram/deepl'
 
 type Transform<T> = (value: T) => T
+
+function isFreeAccountAuthKey(authKey: string): boolean {
+  return authKey.endsWith(':fx')
+}
 
 async function transform<T>(obj: T, transformer: Transform<any>): Promise<T> {
   if (typeof obj !== 'object' || obj === null) {
@@ -28,7 +32,19 @@ async function run(): Promise<void> {
   const sourceLanguage = core.getInput('source_language')
   const authKey = core.getInput('auth_key')
 
-  const translator = new DeepL({authKey})
+  const httpClient = new http.HttpClient()
+  httpClient.requestOptions = {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `DeepL-Auth-Key ${authKey}`
+    }
+  }
+
+  const baseUrl = isFreeAccountAuthKey(authKey)
+    ? 'https://api-free.deepl.com'
+    : 'https://api.deepl.com'
+
+  const apiUrl = `${baseUrl}/v2/translate`
 
   let baseLanguageFile: string | undefined
 
@@ -57,11 +73,6 @@ async function run(): Promise<void> {
     const contents = await fs.readFile(baseLanguageFile, 'utf8')
     const parsed = JSON.parse(contents)
 
-    for await (const [key, value] of Object.entries(parsed)) {
-      core.debug(`Key: ${key}`)
-      core.debug(`Value: ${value}`)
-    }
-
     for await (const langs of targetLanguages.split(',')) {
       const lang = langs.trim()
       const targetLanguageFile = path.join(languageDirectory, `${lang}.json`)
@@ -71,18 +82,25 @@ async function run(): Promise<void> {
       }
 
       // TODO: translate the entire file in one request
+
       const result = await transform(parsed, async value => {
         if (typeof value === 'string') {
-          const translated = await translator.translate(value, lang, {
-            sourceLang: sourceLanguage
-          })
+          core.debug(apiUrl)
+          core.debug(apiUrl)
+          const requestData = {
+            text: Array.isArray(value) ? value : [value],
+            target_lang: lang,
+            source_lang: sourceLanguage
+          }
 
-          if (!translated.translations) {
+          const res = await httpClient.postJson<any>(apiUrl, requestData)
+
+          if (!res.result.translations) {
             throw new Error(
-              `Error translating ${value} to ${lang}: ${translated.message}`
+              `Error translating ${value} to ${lang}: ${res.result.message}`
             )
           }
-          return translated.translations[0].text
+          return res.result.translations[0].text
         }
       })
 
