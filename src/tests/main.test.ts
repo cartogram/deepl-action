@@ -38,17 +38,17 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-  // await fs.rm(FIXTURES_DIR, {recursive: true})
+  await fs.rm(FIXTURES_DIR, {recursive: true})
 })
 
 test('generates the requested translation files from the action input', async () => {
-  process.env['INPUT_LANGUAGE-DIRECTORY'] = path.join(
+  process.env['INPUT_LANGUAGE_DIRECTORY'] = path.join(
     FIXTURES_DIR,
     'translations'
   )
-  process.env['INPUT_SOURCE-LANGUAGE'] = 'en'
-  process.env['INPUT_TARGET-LANGUAGES'] = 'de,fr'
-  process.env['INPUT_AUTH-KEY'] = import.meta.env.VITE_DEEPL_AUTH_KEY
+  process.env['INPUT_SOURCE_LANGUAGE'] = 'en'
+  process.env['INPUT_TARGET_LANGUAGES'] = 'de,fr'
+  process.env['INPUT_AUTH_KEY'] = import.meta.env.VITE_DEEPL_AUTH_KEY
 
   const np = process.execPath
   const ip = path.join(__dirname, '..', '..', 'dist', 'main.js')
@@ -68,6 +68,7 @@ test('generates the requested translation files from the action input', async ()
     'utf8'
   )
 
+  // TODO just mock the deepl library
   expect(JSON.parse(de)).toMatchInlineSnapshot(`
     {
       "apps": {

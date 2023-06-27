@@ -2,17 +2,17 @@ name: '@cartogram/deepl-translate-action'
 description: 'Translate text using DeepL API'
 author: 'Matt Seccafien'
 inputs:
-  languageDirectory:
+  language_directory:
     description: 'Path to a directory in which you will recursively find all JSON files named [from].json (e.g. en.json)'
     default: '/'
-  sourceLanguage:
+  target_languages:
     description: 'Source language'
     required: true
     default: 'en'
-  targetLanguage:
+  source_language:
     description: 'Target language'
     required: true
-  authKey:
+  auth_key:
     description: 'DeepL API auth key'
     required: true
 runs:

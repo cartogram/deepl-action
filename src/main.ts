@@ -23,10 +23,10 @@ async function transform<T>(obj: T, transformer: Transform<any>): Promise<T> {
 }
 
 async function run(): Promise<void> {
-  const languageDirectory = core.getInput('language-directory')
-  const targetLanguages = core.getInput('target-languages')
-  const sourceLanguage = core.getInput('source-language')
-  const authKey = core.getInput('auth-key')
+  const languageDirectory = core.getInput('language_directory')
+  const targetLanguages = core.getInput('target_languages')
+  const sourceLanguage = core.getInput('source_language')
+  const authKey = core.getInput('auth_key')
 
   const translator = new DeepL({authKey})
 
