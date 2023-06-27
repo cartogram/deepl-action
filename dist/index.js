@@ -2969,143 +2969,6 @@ function isLoopbackAddress(host) {
 
 /***/ }),
 
-/***/ 1767:
-/***/ ((module) => {
-
-"use strict";
-
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// src/index.ts
-var src_exports = {};
-__export(src_exports, {
-  DeepL: () => DeepL
-});
-module.exports = __toCommonJS(src_exports);
-
-// src/errors.ts
-var DeepLError = class extends Error {
-  /**
-   * The underlying error associated with the DeepL error, if any.
-   * @type {Error | undefined}
-   */
-  error;
-  /**
-   * Constructs a new instance of the DeepLError class.
-   * @param {string} message - The error message.
-   * @param {Error} [error] - The underlying error associated with the DeepL error, if any.
-   */
-  constructor(message, error) {
-    super(message);
-    this.message = message;
-    this.error = error;
-  }
-};
-
-// src/utils.ts
-function isFreeAccountAuthKey(authKey) {
-  return authKey.endsWith(":fx");
-}
-function isString(arg) {
-  return typeof arg === "string";
-}
-
-// src/logger.ts
-var Logger = class {
-  constructor(prefix = "[ deepL ]") {
-    this.prefix = prefix;
-  }
-  /**
-   * Logs the given message to the console.
-   * @param {...string} messages - Comma-separated list of messages to log.
-   */
-  log(...messages) {
-    console.log(this.prefix, ...messages);
-  }
-  /**
-   * Logs the given message to the console as an error.
-   * @param {string} message - The message to log.
-   */
-  error(...messages) {
-    console.error(this.prefix, ...messages);
-  }
-};
-
-// src/deepL.ts
-var DeepL = class {
-  /**
-   * Constructs a new instance of the DeepL client.
-   * @param {Config} config - Configuration options for the client.
-   * @throws {DeepLError} Throws an error if the provided authKey is invalid.
-   */
-  constructor(config, logger = new Logger()) {
-    this.config = config;
-    this.logger = logger;
-    if (!isString(config.authKey) || config.authKey.length === 0) {
-      throw new DeepLError("authKey must be a non-empty string");
-    }
-    const baseUrl = isFreeAccountAuthKey(config.authKey) ? "https://api-free.deepl.com" : "https://api.deepl.com";
-    this.apiUrl = `${baseUrl}/v2/translate`;
-  }
-  apiUrl;
-  /**
-   * Translates the given text to the target language.
-   * @param {string | string[]} text - The text or array of texts to be translated.
-   * @param {string} targetLang - The target language code.
-   * @param {TranslateOptions} [options={}] - Additional translation options.
-   * @returns {Promise<any>} A promise that resolves to the translated data.
-   */
-  async translate(text, targetLang, options = {}) {
-    const { formality, sourceLang } = options;
-    const requestData = {
-      text: Array.isArray(text) ? text : [text],
-      target_lang: targetLang,
-      source_lang: sourceLang,
-      formality
-    };
-    const requestOptions = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `DeepL-Auth-Key ${this.config.authKey}`
-      },
-      body: JSON.stringify(requestData)
-    };
-    try {
-      const data = await fetch(this.apiUrl, requestOptions).then((response) => {
-        if (!response.ok) {
-          throw new DeepLError(`Status: ${response.status}`);
-        }
-        return response.json();
-      });
-      return data;
-    } catch (error) {
-      this.logger.error("Error:", error.message);
-    }
-  }
-};
-// Annotate the CommonJS export names for ESM import in node:
-0 && (0);
-
-
-/***/ }),
-
 /***/ 8555:
 /***/ ((module) => {
 
@@ -5457,9 +5320,12 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 // src/main.ts
 var core = __toESM(__nccwpck_require__(7733));
 var glob = __toESM(__nccwpck_require__(1256));
+var http = __toESM(__nccwpck_require__(7794));
 var path = __toESM(__nccwpck_require__(1017));
 var fs = __toESM(__nccwpck_require__(3292));
-var import_deepl = __nccwpck_require__(1767);
+function isFreeAccountAuthKey(authKey) {
+  return authKey.endsWith(":fx");
+}
 async function transform(obj, transformer) {
   if (typeof obj !== "object" || obj === null) {
     return transformer(obj);
@@ -5478,7 +5344,15 @@ async function run() {
   const targetLanguages = core.getInput("target_languages");
   const sourceLanguage = core.getInput("source_language");
   const authKey = core.getInput("auth_key");
-  const translator = new import_deepl.DeepL({ authKey });
+  const httpClient = new http.HttpClient();
+  httpClient.requestOptions = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `DeepL-Auth-Key ${authKey}`
+    }
+  };
+  const baseUrl = isFreeAccountAuthKey(authKey) ? "https://api-free.deepl.com" : "https://api.deepl.com";
+  const apiUrl = `${baseUrl}/v2/translate`;
   let baseLanguageFile;
   const globber = await glob.create(`${languageDirectory}/**/*.json`);
   try {
@@ -5498,10 +5372,6 @@ async function run() {
     core.debug("Parsing base language file...");
     const contents = await fs.readFile(baseLanguageFile, "utf8");
     const parsed = JSON.parse(contents);
-    for await (const [key, value] of Object.entries(parsed)) {
-      core.debug(`Key: ${key}`);
-      core.debug(`Value: ${value}`);
-    }
     for await (const langs of targetLanguages.split(",")) {
       const lang = langs.trim();
       const targetLanguageFile = path.join(languageDirectory, `${lang}.json`);
@@ -5510,15 +5380,20 @@ async function run() {
       }
       const result = await transform(parsed, async (value) => {
         if (typeof value === "string") {
-          const translated = await translator.translate(value, lang, {
-            sourceLang: sourceLanguage
-          });
-          if (!translated.translations) {
+          core.debug(apiUrl);
+          core.debug(apiUrl);
+          const requestData = {
+            text: Array.isArray(value) ? value : [value],
+            target_lang: lang,
+            source_lang: sourceLanguage
+          };
+          const res = await httpClient.postJson(apiUrl, requestData);
+          if (!res.result.translations) {
             throw new Error(
-              `Error translating ${value} to ${lang}: ${translated.message}`
+              `Error translating ${value} to ${lang}: ${res.result.message}`
             );
           }
-          return translated.translations[0].text;
+          return res.result.translations[0].text;
         }
       });
       await fs.writeFile(targetLanguageFile, JSON.stringify(result, null, 2));
