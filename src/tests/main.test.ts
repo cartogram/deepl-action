@@ -4,8 +4,6 @@ import * as cp from 'child_process'
 import * as path from 'path'
 import * as fs from 'fs/promises'
 
-import {wait} from '../wait'
-
 const FIXTURES_DIR = path.join(__dirname, 'fixtures')
 
 beforeEach(async () => {
@@ -40,29 +38,36 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-  await fs.rmdir(FIXTURES_DIR, {recursive: true})
+  // await fs.rm(FIXTURES_DIR, {recursive: true})
 })
 
 test('generates the requested translation files from the action input', async () => {
-  const input = parseInt('foo', 10)
-  await expect(wait(input)).rejects.toThrow('milliseconds not a number')
+  process.env['INPUT_LANGUAGE-DIRECTORY'] = path.join(
+    FIXTURES_DIR,
+    'translations'
+  )
+  process.env['INPUT_SOURCE-LANGUAGE'] = 'en'
+  process.env['INPUT_TARGET-LANGUAGES'] = 'de,fr'
+
+  const np = process.execPath
+  const ip = path.join(__dirname, '..', '..', 'dist', 'main.js')
+  const options: cp.ExecFileSyncOptions = {
+    env: process.env
+  }
+
+  // cp.execFileSync(np, [ip], options)
+  console.log(cp.execFileSync(np, [ip], options).toString())
+
+  const de = await fs.readFile(
+    path.join(FIXTURES_DIR, 'translations', 'de.json'),
+    'utf8'
+  )
+
+  const fr = await fs.readFile(
+    path.join(FIXTURES_DIR, 'translations', 'fr.json'),
+    'utf8'
+  )
+
+  expect(JSON.parse(de)).toMatchInlineSnapshot(``)
+  expect(JSON.parse(fr)).toMatchInlineSnapshot(``)
 })
-
-// test('wait 500 ms', async () => {
-//   const start = new Date()
-//   await wait(500)
-//   const end = new Date()
-//   var delta = Math.abs(end.getTime() - start.getTime())
-//   expect(delta).toBeGreaterThan(450)
-// })
-
-// // shows how the runner will run a javascript action with env / stdout protocol
-// test('test runs', () => {
-//   process.env['INPUT_MILLISECONDS'] = '500'
-//   const np = process.execPath
-//   const ip = path.join(__dirname, '..', '..', 'dist', 'main.js')
-//   const options: cp.ExecFileSyncOptions = {
-//     env: process.env
-//   }
-//   console.log(cp.execFileSync(np, [ip], options).toString())
-// })
