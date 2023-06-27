@@ -5,8 +5,9 @@
   "description": "GitHub translation action with DeepL",
   "main": "./dist/main.js",
   "scripts": {
-    "dev": "vitest",
+    "dev": "tsup src/main.ts --format cjs,esm --dts --watch",
     "test": "vitest run",
+    "test:watch": "vitest",
     "build": "tsup src/main.ts --format cjs,esm --dts",
     "lint": "tsc",
     "ci": "pnpm run lint && pnpm run test && pnpm run build",
