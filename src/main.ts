@@ -2,12 +2,32 @@ import * as core from '@actions/core'
 import * as glob from '@actions/glob'
 import * as path from 'path'
 import * as fs from 'fs/promises'
+import {DeepL} from '@cartogram/deepl'
+
+type Transform<T> = (value: T) => T
+
+async function transform<T>(
+  obj: T,
+  transformer: Transform<unknown>
+): Promise<T> {
+  const transformedObj: any = {}
+  for (const key in obj) {
+    if (Object.hasOwnProperty.call(obj, key)) {
+      const value = obj[key]
+      transformedObj[key] = await transform(value, transformer)
+    }
+  }
+
+  return transformedObj
+}
 
 async function run(): Promise<void> {
   const languageDirectory = core.getInput('language-directory')
   const targetLanguages = core.getInput('target-languages')
   const sourceLanguage = core.getInput('source-language')
   const authKey = core.getInput('auth-key')
+
+  const translator = new DeepL({authKey})
 
   let baseLanguageFile: string | undefined
 
@@ -49,61 +69,27 @@ async function run(): Promise<void> {
         continue
       }
 
-      const result = await transform(parsed, uppercaseTransform(lang))
+      // TODO: translate the entire file in one request
+      const result = await transform(parsed, async value => {
+        if (typeof value === 'string') {
+          const translated = await translator.translate(value, lang, {
+            sourceLang: sourceLanguage
+          })
+
+          if (!translated.translations) {
+            throw new Error(
+              `Error translating ${value} to ${lang}: ${translated.message}`
+            )
+          }
+          return translated.translations[0].text
+        }
+      })
 
       await fs.writeFile(targetLanguageFile, JSON.stringify(result, null, 2))
     }
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
-
-  try {
-    const ms: string = core.getInput('lagnuageDirectory')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
-
-    core.debug(new Date().toTimeString())
-    core.debug(new Date().toTimeString())
-
-    core.setOutput('time', new Date().toTimeString())
-
-    core.error('This is a bad error, action may still succeed though.')
-
-    core.warning(
-      "Something went wrong, but it's not bad enough to fail the build."
-    )
-    core.notice('Something happened that you might want to know about.')
-  } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message)
-  }
 }
 
 run()
-
-type Transform<T> = (value: T) => T
-
-async function transform<T>(obj: T, transformer: Transform<any>): Promise<T> {
-  if (typeof obj !== 'object' || obj === null) {
-    return transformer(obj)
-  }
-
-  // Recursively transform each value in the object
-  const transformedObj: any = {}
-  for (const key in obj) {
-    if (Object.hasOwnProperty.call(obj, key)) {
-      const value = obj[key]
-      transformedObj[key] = await transform(value, transformer)
-    }
-  }
-
-  return transformedObj
-}
-
-function uppercaseTransform(lang: string) {
-  return async (value: string) => {
-    if (typeof value === 'string') {
-      // TODO: Translate value using DeepL API
-      return value.toUpperCase()
-    }
-    return value
-  }
-}

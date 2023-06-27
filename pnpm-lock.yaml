@@ -7,6 +7,9 @@ dependencies:
   '@actions/glob':
     specifier: ^0.4.0
     version: 0.4.0
+  '@cartogram/deepl':
+    specifier: ^0.0.4
+    version: 0.0.4
 
 devDependencies:
   '@types/node':
@@ -57,6 +60,10 @@ packages:
     resolution: {integrity: sha512-BonhODnXr3amchh4qkmjPMUO8mFi/zLaaCeCAJZqch8iQqyDnVIkySjB38VHAC8IJ+bnlgfOqlhpyCUZHlQsqw==}
     dependencies:
       tunnel: 0.0.6
+    dev: false
+
+  /@cartogram/deepl@0.0.4:
+    resolution: {integrity: sha512-sFHCV1su8scT9Q+lRIPjTzdkTXWpFtkPxkPaUrIJ7hHon+q1TZRUHpc6gAzDlFuhBHZvk4rBHi9IOOtqTY3GIg==}
     dev: false
 
   /@esbuild/android-arm64@0.17.19:

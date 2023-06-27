@@ -48,6 +48,7 @@ test('generates the requested translation files from the action input', async ()
   )
   process.env['INPUT_SOURCE-LANGUAGE'] = 'en'
   process.env['INPUT_TARGET-LANGUAGES'] = 'de,fr'
+  process.env['INPUT_AUTH-KEY'] = import.meta.env.VITE_DEEPL_AUTH_KEY
 
   const np = process.execPath
   const ip = path.join(__dirname, '..', '..', 'dist', 'main.js')
@@ -68,6 +69,44 @@ test('generates the requested translation files from the action input', async ()
     'utf8'
   )
 
-  expect(JSON.parse(de)).toMatchInlineSnapshot(``)
-  expect(JSON.parse(fr)).toMatchInlineSnapshot(``)
+  expect(JSON.parse(de)).toMatchInlineSnapshot(`
+    {
+      "apps": {
+        "headline": "Noch schneller übersetzen mit DeepL Apps",
+        "mac": {
+          "body": "Kostenloses Herunterladen",
+          "headline": "DeepL für Mac",
+        },
+        "mobile": {
+          "body": "Kostenloses Herunterladen",
+          "headline": "DeepL für <a href=''>iOS</a> <a href=''>Android</a>",
+        },
+      },
+      "write": {
+        "body": "DeepL Write ist ein Tool, das Ihnen hilft, Ihre Texte zu verbessern. Es analysiert Ihren Text und macht Vorschläge zur Verbesserung. Außerdem bietet es ein Wörterbuch und einen Thesaurus, die Ihnen helfen, die richtigen Wörter zu finden.",
+        "button": "Versuchen Sie DeepL Schreiben",
+        "headline": "Perfektionieren Sie Ihr Schreiben mit DeepL Write",
+      },
+    }
+  `)
+  expect(JSON.parse(fr)).toMatchInlineSnapshot(`
+    {
+      "apps": {
+        "headline": "Traduire encore plus vite avec les applications DeepL",
+        "mac": {
+          "body": "Télécharger gratuitement",
+          "headline": "DeepL pour Mac",
+        },
+        "mobile": {
+          "body": "Télécharger gratuitement",
+          "headline": "DeepL pour <a href=''>iOS</a> <a href=''>Android</a>",
+        },
+      },
+      "write": {
+        "body": "DeepL Write est un outil qui vous aide à améliorer votre écriture. Il analyse votre texte et vous propose des suggestions d'amélioration. Il propose également un dictionnaire et un thésaurus pour vous aider à trouver les mots justes.",
+        "button": "Essayez DeepL Écrivez",
+        "headline": "Perfectionnez votre écriture avec DeepL Write",
+      },
+    }
+  `)
 })
