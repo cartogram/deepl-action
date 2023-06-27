@@ -1,11 +1,19 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: '@cartogram/deepl-translate-action'
+description: 'Translate text using DeepL API'
+author: 'Matt Seccafien'
 inputs:
-  milliseconds: # change this
+  languageFilesDirectory:
+    description: 'Path to a directory in which you will recursively find all JSON files named [from].json (e.g. en.json). Either filePath or dirPath is required'
+    default: '/'
+  sourceLange:
+    description: 'Source language'
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+  targetLang:
+    description: 'Target language'
+    required: true
+  authKey:
+    description: 'DeepL API auth key'
+    required: true
 runs:
   using: 'node16'
   main: 'dist/index.js'
