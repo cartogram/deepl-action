@@ -56,8 +56,7 @@ test('generates the requested translation files from the action input', async ()
     env: process.env
   }
 
-  // cp.execFileSync(np, [ip], options)
-  console.log(cp.execFileSync(np, [ip], options).toString())
+  cp.execFileSync(np, [ip], options)
 
   const de = await fs.readFile(
     path.join(FIXTURES_DIR, 'translations', 'de.json'),

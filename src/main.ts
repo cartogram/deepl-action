@@ -6,10 +6,11 @@ import {DeepL} from '@cartogram/deepl'
 
 type Transform<T> = (value: T) => T
 
-async function transform<T>(
-  obj: T,
-  transformer: Transform<unknown>
-): Promise<T> {
+async function transform<T>(obj: T, transformer: Transform<any>): Promise<T> {
+  if (typeof obj !== 'object' || obj === null) {
+    return transformer(obj)
+  }
+
   const transformedObj: any = {}
   for (const key in obj) {
     if (Object.hasOwnProperty.call(obj, key)) {

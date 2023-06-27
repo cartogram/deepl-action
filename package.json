@@ -1,5 +1,5 @@
 {
-  "name": "deepl-translate-action",
+  "name": "@cartogram/deepl-translate-action",
   "version": "0.0.0",
   "private": true,
   "description": "GitHub translation action with DeepL",
@@ -10,14 +10,13 @@
     "test:watch": "vitest",
     "build": "tsup src/main.ts --format cjs,esm --dts",
     "lint": "tsc",
-    "ci": "pnpm run lint && pnpm run test && pnpm run build",
+    "ci": "pnpm run lint && pnpm run build && pnpm run test",
     "format": "prettier --write .",
-    "release": "pnpm run build && changeset publish",
-    "package": "ncc build --source-map --license licenses.txt"
+    "release": "pnpm run build"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/cartogram/deepl-translate-action.git"
   },
   "keywords": [
     "actions",
